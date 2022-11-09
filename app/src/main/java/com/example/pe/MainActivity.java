@@ -12,6 +12,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     List<Employee> employeeList;
     ArrayAdapter adapter;
     Dialog dialog_detial,dialog_insert,dialog_update;
+    FrameLayout fragment_update;
 
     //dung de count double click
     int count = 0;
@@ -30,6 +32,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //fragment
+        fragment_update = findViewById(R.id.fragment_update);
+
+
         //khoi tạo list view
         lv_employee = findViewById(R.id.listview_employee);
         employeeList = EmployeeDAO.getAll(this);
@@ -66,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
                 Handler handler = new Handler();
                 handler.postDelayed(() -> {
                     if (count == 1) {
+
                     } else if (count == 2) {
                         Employee employee = employeeList.get(position);
                         showDialogDetail(employee);
@@ -81,6 +89,13 @@ public class MainActivity extends AppCompatActivity {
         btn_insert_main.setOnClickListener(t->{
             showDialogInsert();
         });
+
+
+
+
+
+
+
     }
     //update
     private void showDialogUpdate(Employee employee){
