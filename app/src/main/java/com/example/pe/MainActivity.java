@@ -18,15 +18,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
     ListView lv_employee;
     List<Employee> employeeList;
     ArrayAdapter adapter;
-    Dialog dialog_detial,dialog_insert,dialog_update;
+    Dialog dialog_detial, dialog_insert, dialog_update;
 
     //dung de count double click
     int count = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button btn_insert_main = findViewById(R.id.btn_insert_main);
 
-        btn_insert_main.setOnClickListener(t->{
+        btn_insert_main.setOnClickListener(t -> {
             showDialogInsert();
         });
     }
@@ -103,13 +105,13 @@ public class MainActivity extends AppCompatActivity {
         };
 
         fragmentUpdate.setUpdateListener(onUpdateListener);
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_update,fragmentUpdate).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_update, fragmentUpdate).commit();
 
 
     }
 
     //update
-    private void showDialogUpdate(Employee employee){
+    private void showDialogUpdate(Employee employee) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LayoutInflater inflater = getLayoutInflater();
 
@@ -119,9 +121,10 @@ public class MainActivity extends AppCompatActivity {
         dialog_update = builder.create();
 
         dialog_update.show();
-        updateEmployee(view,employee);
+        updateEmployee(view, employee);
     }
-    private void updateEmployee(View view, Employee employee){
+
+    private void updateEmployee(View view, Employee employee) {
 //query tất cả input trong view vd:view -> dialog_add
         EditText update_id = view.findViewById(R.id.id_emp_update);
         EditText update_fullname = view.findViewById(R.id.fullname_emp_update);
@@ -175,6 +178,7 @@ public class MainActivity extends AppCompatActivity {
         dialog_insert.show();
         createEmployee(view);
     }
+
     private void createEmployee(View view) {
         //query tất cả input trong view vd:view -> dialog_add
         EditText add_id = view.findViewById(R.id.id_emp_insert);
@@ -185,23 +189,26 @@ public class MainActivity extends AppCompatActivity {
         //set event click vào button add
         btn_add.setOnClickListener(t -> {
             //check các input có empty không
-            if (add_id.getText().toString().isEmpty() || add_fullname.getText().toString().isEmpty() || add_age.getText().toString().isEmpty()) {
-                Toast.makeText(this, "Field can not be empty", Toast.LENGTH_SHORT).show();
-            } else {
-                //gọi hàm insert trong EmplopyeeDao
-                boolean check = EmployeeDAO.insert(this,
-                        new Employee(add_id.getText().toString()
-                        , add_fullname.getText().toString()
-                        , Integer.parseInt(add_age.getText().toString())
-                ));
-                if (check) {
-                    //update lại ngoài màn hình hiển thị
-                    refreshListView();
-                    Toast.makeText(this, "insert successfully", Toast.LENGTH_SHORT).show();
+            if (Validation(new Employee(add_id.getText().toString(), add_fullname.getText().toString(), Integer.parseInt(add_age.getText().toString())), view)) {
+                if (add_id.getText().toString().isEmpty() || add_fullname.getText().toString().isEmpty() || add_age.getText().toString().isEmpty()) {
+                    Toast.makeText(this, "Field can not be empty", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(this, "Employee already exists", Toast.LENGTH_SHORT).show();
+                    //gọi hàm insert trong EmplopyeeDao
+                    boolean check = EmployeeDAO.insert(this,
+                            new Employee(add_id.getText().toString()
+                                    , add_fullname.getText().toString()
+                                    , Integer.parseInt(add_age.getText().toString())
+                            ));
+                    if (check) {
+                        //update lại ngoài màn hình hiển thị
+                        refreshListView();
+                        Toast.makeText(this, "insert successfully", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, "Employee already exists", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
+
             //tắt dialog add employee
             dialog_insert.dismiss();
         });
@@ -218,10 +225,11 @@ public class MainActivity extends AppCompatActivity {
         dialog_detial = builder.create();
 
         dialog_detial.show();
-        setValueToDetail(employee,view);
-        deleteDetail(view,employee.getId());
+        setValueToDetail(employee, view);
+        deleteDetail(view, employee.getId());
     }
-    private void setValueToDetail(Employee employee,View view){
+
+    private void setValueToDetail(Employee employee, View view) {
         TextView id = view.findViewById(R.id.id_emp_detail);
         TextView fullname = view.findViewById(R.id.fullname_emp_detail);
         TextView age = view.findViewById(R.id.age_emp_detail);
@@ -232,23 +240,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //delete
-    private void deleteDetail(View view, String id){
+    private void deleteDetail(View view, String id) {
         Button btn_delete_detail = view.findViewById(R.id.btn_delete_detail);
-        btn_delete_detail.setOnClickListener(t->{
+        btn_delete_detail.setOnClickListener(t -> {
             //confirm dialog when you wana delete
             new AlertDialog.Builder(this)
                     .setTitle("Delete")
                     .setMessage("Do you want to Delete")
 
                     .setPositiveButton("Delete", (dialog, whichButton) -> {
-                        boolean check = EmployeeDAO.delete(view.getContext(),id);
-                        if(check){
+                        boolean check = EmployeeDAO.delete(view.getContext(), id);
+                        if (check) {
                             dialog_detial.dismiss();
                             refreshListView();
                             Toast.makeText(this, "Delete Successfully", Toast.LENGTH_SHORT).show();
                             finish();
-                        }
-                        else{
+                        } else {
                             Toast.makeText(this, "Delete faild", Toast.LENGTH_SHORT).show();
                         }
                     })
@@ -259,7 +266,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void refreshListView(){
+    public void refreshListView() {
         adapter.clear();
         employeeList.clear();
         employeeList = EmployeeDAO.getAll(this);
@@ -267,5 +274,30 @@ public class MainActivity extends AppCompatActivity {
 
         adapter.notifyDataSetChanged();
     }
+
+    private boolean Validation(Employee employee, View view) {
+
+        boolean success = true;
+        String validationID = "^[0-9]{2}[A-Za-z]{2}[0-9]\\z";
+        //format la ab-123
+//        String validationID = "^[A-Za-z]{2}[-][0-9]{3}\\z";
+        if (employee.getAge() <= 18) {
+            success = false;
+            Toast.makeText(view.getContext(), "Age must be more than 18 ", Toast.LENGTH_SHORT).show();
+        }
+        if (employee.getId().length() <= 5) {
+            boolean check = Pattern.matches(validationID, employee.getId());
+            if (!check) {
+                success = false;
+                Toast.makeText(view.getContext(), "Id must be 2 number 2 characters 1 number ", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            success = false;
+            Toast.makeText(view.getContext(), "Id must be 5 characters ", Toast.LENGTH_SHORT).show();
+
+        }
+        return success;
+    }
+
 
 }
