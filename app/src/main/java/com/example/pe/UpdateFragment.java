@@ -3,6 +3,8 @@ package com.example.pe;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +13,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.util.List;
+
 
 public class UpdateFragment extends Fragment {
 
@@ -18,7 +22,7 @@ public class UpdateFragment extends Fragment {
 
     private String idEmployee;
     View view;
-
+    RecyclerView rcv_emp;
 
     //callback khi mà có sự kiện update
     OnUpdateListener callback;
@@ -63,6 +67,7 @@ public class UpdateFragment extends Fragment {
         return view;
     }
     private void init(){
+        setRcvEmployee();
         closeFragment();
         EditText id = view.findViewById(R.id.id_emp_update_fragment);
         EditText fullName = view.findViewById(R.id.fullname_emp_update_fragment);
@@ -97,6 +102,19 @@ public class UpdateFragment extends Fragment {
                 }
             }
         });
+    }
+
+    private void setRcvEmployee() {
+        rcv_emp = view.findViewById(R.id.rcv_emp);
+
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(view.getContext(),1);
+        rcv_emp.setLayoutManager(gridLayoutManager);
+
+        List<Employee> employeeList = EmployeeDAO.getAll(view.getContext());
+
+        EmployeeAdapter adapter = new EmployeeAdapter(employeeList);
+
+        rcv_emp.setAdapter(adapter);
     }
 
     private void closeFragment() {
