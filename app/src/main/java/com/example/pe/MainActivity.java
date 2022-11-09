@@ -12,6 +12,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         //khoi tạo list view
         lv_employee = findViewById(R.id.listview_employee);
         employeeList = EmployeeDAO.getAll(this);
@@ -66,9 +68,11 @@ public class MainActivity extends AppCompatActivity {
                 Handler handler = new Handler();
                 handler.postDelayed(() -> {
                     if (count == 1) {
+
                     } else if (count == 2) {
-                        Employee employee = employeeList.get(position);
-                        showDialogDetail(employee);
+//                        Employee employee = employeeList.get(position);
+//                        showDialogDetail(employee);
+                        showFragmentUpdate(employeeList.get(position).getId());
                     }
                     count = 0;
                 }, 500);
@@ -82,6 +86,28 @@ public class MainActivity extends AppCompatActivity {
             showDialogInsert();
         });
     }
+
+    private void showFragmentUpdate(String id) {
+        UpdateFragment fragmentUpdate = UpdateFragment.newInstance(id);
+
+        UpdateFragment.OnUpdateListener onUpdateListener = new UpdateFragment.OnUpdateListener() {
+            @Override
+            public void onUpdateClicked() {
+                refreshListView();
+            }
+
+            @Override
+            public void closeFragment() {
+                getSupportFragmentManager().beginTransaction().remove(fragmentUpdate).commit();
+            }
+        };
+
+        fragmentUpdate.setUpdateListener(onUpdateListener);
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_update,fragmentUpdate).commit();
+
+
+    }
+
     //update
     private void showDialogUpdate(Employee employee){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -233,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void refreshListView(){
+    public void refreshListView(){
         adapter.clear();
         employeeList.clear();
         employeeList = EmployeeDAO.getAll(this);
